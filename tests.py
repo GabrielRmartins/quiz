@@ -1,5 +1,6 @@
 import pytest
 from model import Question
+from model import Choice
 
 
 def test_create_question():
@@ -34,3 +35,65 @@ def test_create_choice():
     assert len(question.choices) == 1
     assert choice.text == 'a'
     assert not choice.is_correct
+
+
+def test_remove_all_choices_from_empty_question():
+    question = Question(title='q1')
+    question.remove_all_choices()
+    assert len(question.choices) == 0
+
+def test_remove_all_choice_from_filled_question():
+    question = Question(title ='q1')
+    question.add_choice('a', False)
+    question.remove_all_choices()
+    assert len(question.choices) == 0
+
+def test_create_question_with_lower_invalid_points():
+    with pytest.raises(Exception):
+        Question(title='q1', points= 0)
+        
+def test_create_question_with_upper_invalid_points():
+    with pytest.raises(Exception):
+        Question(title='q1', points= 101)
+
+def test_create_choice_with_invalid_text():
+    with pytest.raises(Exception):
+        Choice(id=0, text='',is_correct=False)
+    with pytest.raises(Exception):
+        Choice(id=0, text='a'*101,is_correct=False)
+
+def test_remove_choice_by_id():
+    question = Question(title='q1')
+    question.add_choice(text='a',is_correct=False)
+    tested_choice = question.choices[0]
+    tested_choice_id = tested_choice.id
+    question.remove_choice_by_id(tested_choice_id)
+    assert len(question.choices) == 0
+
+def test_select_correct_choices():
+    question = Question(title='q1')
+    c1 = question.add_choice(text='a', is_correct=True)
+    result = question.select_choices([c1.id])
+    assert result == [c1.id]
+
+def test_select_incorrect_choices():
+    question = Question(title='q1')
+    c1 = question.add_choice(text='a', is_correct=False)
+    result = question.select_choices([c1.id])
+    assert result == []
+
+def test_select_multiple_correct_choices():
+    question = Question(title='q1',max_selections=3)
+    c1 = question.add_choice(text='a',is_correct=True)
+    c2 = question.add_choice(text='b',is_correct=True)
+    c3 = question.add_choice(text='c',is_correct=True)
+    result = question.select_choices([c1.id,c2.id,c3.id])
+    assert result == [1,2,3]
+
+def test_select_multiple_incorrect_choices():
+    question = Question(title='q1',max_selections=3)
+    c1 = question.add_choice(text='a',is_correct=False)
+    c2 = question.add_choice(text='b',is_correct=False)
+    c3 = question.add_choice(text='c',is_correct=False)
+    result = question.select_choices([c1.id,c2.id,c3.id])
+    assert result == []
