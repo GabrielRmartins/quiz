@@ -2,6 +2,17 @@ import pytest
 from model import Question
 from model import Choice
 
+@pytest.fixture
+def data():
+    question = Question(title='q1',points=5,max_selections=3)
+    question.add_choice(text='a',is_correct=False)
+    question.add_choice(text='b',is_correct=True)
+    question.add_choice(text='c',is_correct=False)
+    question.add_choice(text='d',is_correct=False)
+    question.add_choice(text='e',is_correct=False)
+
+    return question
+
 
 def test_create_question():
     question = Question(title='q1')
@@ -97,3 +108,18 @@ def test_select_multiple_incorrect_choices():
     c3 = question.add_choice(text='c',is_correct=False)
     result = question.select_choices([c1.id,c2.id,c3.id])
     assert result == []
+
+def test_choices_ids_creation(data):
+    data.remove_choice_by_id(1)
+    data.remove_choice_by_id(2)
+    data.remove_choice_by_id(3)
+    data.remove_choice_by_id(4)
+    data.remove_choice_by_id(5)
+
+    assert len(data.choices) == 0
+
+def test_set_correct_choices(data):
+    data.set_correct_choices([1,2,3])
+    correct_choices = [choice.id for choice in data.choices if choice.is_correct]
+
+    assert len(correct_choices) == 3
